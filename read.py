@@ -31,16 +31,19 @@ input_str = open('full.json', 'r').read()
 slist  = json.loads(input_str)
 pre = []
 for s in slist:
-    aname = s["artistName"]
-    track = s["trackName"].replace('"', '\'')
+    aname = s["master_metadata_album_artist_name"]
+    if aname == "null" or aname == None:
+        continue
+    track = s["master_metadata_track_name"].replace('"', '\'')
+    # track = s["master_metadata_track_name"]
 
-    d = datetime.datetime.strptime(s["endTime"], "%Y-%m-%d %H:%M")
+    d = datetime.datetime.strptime(s["ts"], "%Y-%m-%dT%H:%M:%SZ")
     d = d.replace(tzinfo=datetime.timezone.utc)
     d = d.astimezone()
-    endtime = d.strftime("%Y-%m-%d %H:%M")
+    endtime = d.strftime("%Y-%m-%d %H:%M:%S")
 
     # endtime = s["endTime"]
-    seconds = int(s["msPlayed"]) / 1000
+    seconds = int(s["ms_played"]) / 1000
     pre.append((aname,track,endtime,int(seconds)))
 
 # sort the list
@@ -66,7 +69,7 @@ with open(ofile, 'w') as outf:
         sdict[aname].append(endtime)
 
         d,t = endtime.split(' ')
-        h,m = t.split(':')
+        h,m,s = t.split(':')
         H = int(h)
         M = int(m) / 60
         T = H + M
